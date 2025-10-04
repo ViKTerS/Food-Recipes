@@ -1,110 +1,76 @@
 "use client";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { useEffect, useState } from "react";
-import RecipeCard from "../components/RecipeCard";
+export default function MainMenuPage() {
+  const router = useRouter();
+  const [showStaffLogin, setShowStaffLogin] = useState(false);
+  const [staffCode, setStaffCode] = useState("");
 
-type Meal = {
-  idMeal: string;
-  strMeal: string;
-  strMealThumb: string;
-  strCategory: string;
-};
-
-export default function HomePage() {
-  const [search, setSearch] = useState("");
-  const [recipes, setRecipes] = useState<Meal[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // โหลดเมนู default ทันทีเมื่อเปิดเว็บ
-  useEffect(() => {
-    const fetchDefaultRecipes = async () => {
-      setLoading(true);
-      try {
-        // ใช้ category "Seafood" เป็นตัวอย่าง
-        const res = await fetch(
-          "https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood"
-        );
-        const data = await res.json();
-        setRecipes(data.meals || []);
-      } catch (error) {
-        console.error("Error fetching default recipes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDefaultRecipes();
-  }, []);
-
-  // ดึง API เมื่อค้นหา
-  useEffect(() => {
-    if (search.trim() === "") return;
-
-    const fetchRecipes = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `https://www.themealdb.com/api/json/v1/1/search.php?s=${search}`
-        );
-        const data = await res.json();
-        setRecipes(data.meals || []);
-      } catch (error) {
-        console.error("Error fetching recipes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRecipes();
-  }, [search]);
+  const handleStaffLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (staffCode === "12345") {
+      router.push("/admin");
+    } else {
+      alert("รหัสพนักงานไม่ถูกต้อง");
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-green-400 to-green-600 text-white py-16 px-6 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-          🍲 Recipe Website
-        </h1>
-        <p className="text-lg md:text-xl mb-6">
-          รวมสูตรอาหารอร่อย ๆ จากทั่วโลก ค้นหาเมนูที่คุณชอบได้เลย
-        </p>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍 ค้นหาสูตรอาหาร..."
-          className="w-full md:w-1/2 px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-        />
-      </section>
+    <main className="min-h-screen bg-gradient-to-br from-green-100 to-green-300 flex flex-col items-center justify-center text-center px-4">
+      <h1 className="text-4xl font-extrabold text-green-700 mb-6">
+        🍲 Recipe Website
+      </h1>
+      <p className="text-lg text-gray-700 mb-10">
+        ยินดีต้อนรับ! เลือกเมนูที่คุณต้องการ
+      </p>
 
-      {/* Recipe List */}
-      <section className="p-8 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          🍴 เมนูอาหาร
-        </h2>
+      {/* ปุ่มเมนู */}
+      <div className="space-y-4 w-full max-w-xs">
+        <Link
+          href="/Home"
+          className="block w-full bg-green-600 text-white py-3 rounded-lg text-lg font-semibold text-center hover:bg-green-700 transition"
+        >
+          🍳 ดูสูตรอาหาร
+        </Link>
 
-        {loading ? (
-          <p className="text-center text-gray-600">⏳ กำลังโหลด...</p>
-        ) : recipes.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {recipes.map((meal) => (
-              <RecipeCard
-                key={meal.idMeal}
-                recipe={{
-                  id: meal.idMeal,
-                  title: meal.strMeal,
-                  image: meal.strMealThumb,
-                  category: meal.strCategory || "N/A",
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-600 text-center text-lg mt-10">
-            😢 ไม่พบเมนูที่ค้นหา
-          </p>
-        )}
-      </section>
+        
+        
+         <button onClick={() => setShowStaffLogin(!showStaffLogin)}
+          className="w-full bg-yellow-500 text-white py-3 rounded-lg text-lg font-semibold hover:bg-yellow-600 transition"
+        >
+          👨‍🍳 สำหรับทีมงาน
+         </button>
+        
+      </div>
+
+      {/* ฟอร์มใส่รหัสพนักงาน */}
+      {showStaffLogin && (
+        <form
+          onSubmit={handleStaffLogin}
+          className="mt-6 bg-white p-6 rounded-2xl shadow-md w-full max-w-sm"
+        >
+          <h2 className="text-xl font-bold text-gray-800 mb-4">
+            🔐 เข้าสู่ระบบพนักงาน
+          </h2>
+          <input
+            type="text"
+            placeholder="กรอกรหัสพนักงาน"
+            value={staffCode}
+            onChange={(e) => setStaffCode(e.target.value)}
+            className="w-full border border-gray-400 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-gray-800 placeholder:text-gray-500"
+          />
+          <Link href="/AdminPage">
+          <button
+            type="submit"
+            className="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
+          >
+            เข้าสู่ระบบ
+          </button>
+          </Link>
+        </form>
+      )}
     </main>
   );
 }
