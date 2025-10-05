@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import RecipeCard from "../../components/RecipeCard";
 import { useMenu } from "@/StoreMeal/menu"
+import Footer from "@/components/Footer"
 
 type Meal = {
   idMeal: string;
@@ -126,6 +127,7 @@ export default function HomePage() {
           </p>
         )}
       </section>
+      <Footer />
     </main>
   );
 }

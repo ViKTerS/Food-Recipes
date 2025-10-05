@@ -3,19 +3,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+
 export default function MainMenuPage() {
   const router = useRouter();
   const [showStaffLogin, setShowStaffLogin] = useState(false);
   const [staffCode, setStaffCode] = useState("");
 
   const handleStaffLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (staffCode === "12345") {
-      router.push("/admin");
-    } else {
-      alert("รหัสพนักงานไม่ถูกต้อง");
-    }
-  };
+  e.preventDefault();
+  if (staffCode === "12345") {
+    router.push("/AdminPage"); 
+  } else {
+    alert("รหัสพนักงานไม่ถูกต้อง");
+  }
+};
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-100 to-green-300 flex flex-col items-center justify-center text-center px-4">
@@ -71,6 +72,9 @@ export default function MainMenuPage() {
           </Link>
         </form>
       )}
+      
+
+      
     </main>
   );
 }
