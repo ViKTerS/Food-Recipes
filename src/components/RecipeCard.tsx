@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 interface RecipeCardProps {
   recipe: {
@@ -12,9 +13,12 @@ interface RecipeCardProps {
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 flex flex-col">
-      <img src={recipe.image} 
+      <Image
+        src={recipe.image}          // URL จาก TheMealDB
         alt={recipe.title}
-        className="w-full h-48 object-cover"
+        width={400}
+        height={300}
+        className="w-full h-48 object-cover rounded-lg"
       />
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
