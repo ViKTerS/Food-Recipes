@@ -10,8 +10,8 @@ interface Recipe {
   strInstructions: string;
   strMealThumb: string;
   strYoutube: string;
-  [key: `strIngredient${number}`]: string;
-  [key: `strMeasure${number}`]: string;
+  [key: `strIngredient${number}`]: string | null;
+  [key: `strMeasure${number}`]: string | null;
 }
 
 async function getRecipeDetail(id: string): Promise<Recipe | null> {
@@ -31,42 +31,16 @@ async function getRecipeDetail(id: string): Promise<Recipe | null> {
 
 export default async function RecipeDetail({ params }: { params: { id: string } }) {
   const recipe = await getRecipeDetail(params.id);
-  if (!recipe) notFound();
+  if (!recipe) return notFound(); // ป้องกัน undefined
 
   const ingredients: { ingredient: string; measure: string }[] = [];
   for (let i = 1; i <= 20; i++) {
-    const ing = recipe[`strIngredient${i}` as keyof Recipe] as string;
-    const measure = recipe[`strMeasure${i}` as keyof Recipe] as string;
+    const ing = recipe[`strIngredient${i}` as keyof Recipe];
+    const measure = recipe[`strMeasure${i}` as keyof Recipe];
     if (ing && ing.trim()) {
       ingredients.push({ ingredient: ing.trim(), measure: measure?.trim() || '' });
     }
   }
-
-  // ฟังก์ชันช่วย render รูป
-  const renderImage = (src: string, alt: string) => {
-    if (src.startsWith('http')) {
-      return (
-        <Image
-          src={recipe?.strMealThumb || "/placeholder.png"} // ถ้าไม่มีรูป
-          alt={recipe?.strMeal || "Meal Image"}
-          width={500}      // กำหนดขนาดตาม layout
-          height={300}
-          className="rounded-lg"
-        />
-      );
-    } else {
-      return (
-        <Image
-          src={src}
-          alt={alt}
-          width={600}
-          height={400}
-          className="w-full h-auto object-cover rounded-lg"
-          priority
-        />
-      );
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-8">
@@ -91,7 +65,14 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
             {/* รูปภาพ */}
             <div className="flex flex-col">
               <div className="relative rounded-xl overflow-hidden shadow-md">
-                {renderImage(recipe.strMealThumb, recipe.strMeal)}
+                <Image
+                  src={recipe.strMealThumb || "/placeholder.png"} // ป้องกัน undefined
+                  alt={recipe.strMeal || "Meal Image"}
+                  width={500}
+                  height={300}
+                  className="w-full h-48 object-cover rounded-lg"
+                  priority
+                />
               </div>
 
               {/* ปุ่ม YouTube */}
@@ -118,20 +99,6 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
                 {recipe.strMeal}
               </h1>
 
-              <div className="flex flex-wrap gap-3 mb-6">
-                <span className="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
-                    <path d="M14 6a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/>
-                  </svg>
-                </span>
-                <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 2.5a7.5 7.5 0 107.5 7.5A7.5 7.5 0 0010 2.5zM10 15a5 5 0 100-10 5 5 0 000 10z" clipRule="evenodd"/>
-                  </svg>
-                </span>
-              </div>
-
               {/* วัตถุดิบ */}
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-orange-200">
@@ -139,7 +106,7 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
                 </h2>
                 <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
                   <ul className="grid gap-3">
-                    {ingredients.map((item, index: number) => (
+                    {ingredients.map((item, index) => (
                       <li key={index} className="flex items-start gap-3 p-2 rounded-lg hover:bg-amber-100 transition-colors">
                         <span className="flex-shrink-0 w-5 h-5 bg-orange-500 rounded-full mt-1 flex items-center justify-center">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -162,14 +129,11 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
           <div className="px-6 pb-8">
             <div className="border-t border-gray-200 pt-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <svg className="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
-                </svg>
                 วิธีการทำ
               </h2>
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <div className="prose max-w-none text-gray-700 leading-relaxed text-lg">
-                  {recipe.strInstructions.split('\n').map((paragraph: string, index: number) => (
+                  {recipe.strInstructions.split('\n').map((paragraph, index) => (
                     paragraph.trim() && <p key={index} className="mb-4">{paragraph}</p>
                   ))}
                 </div>
@@ -184,9 +148,6 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
             href="/recipes"
             className="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-gray-700 font-medium px-6 py-3 rounded-lg border border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
             กลับไปยังหน้าสูตรอาหารทั้งหมด
           </Link>
         </div>
