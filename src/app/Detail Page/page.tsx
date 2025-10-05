@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Recipe {
   idMeal: string;
@@ -13,16 +14,13 @@ interface Recipe {
   [key: `strMeasure${number}`]: string;
 }
 
-
 async function getRecipeDetail(id: string): Promise<Recipe | null> {
   try {
     const res = await fetch(
       `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`,
       { next: { revalidate: 3600 } }
     );
-    
     if (!res.ok) return null;
-    
     const data = await res.json();
     return data.meals?.[0] || null;
   } catch (error) {
@@ -31,33 +29,42 @@ async function getRecipeDetail(id: string): Promise<Recipe | null> {
   }
 }
 
-export default async function RecipeDetail({ 
-  params 
-}: { 
-  params: { id: string } 
-}) {
+export default async function RecipeDetail({ params }: { params: { id: string } }) {
   const recipe = await getRecipeDetail(params.id);
-  
-  if (!recipe) {
-    notFound();
-  }
+  if (!recipe) notFound();
 
-  // แปลงวัตถุดิบและหน่วยวัดเป็นอาร์เรย์
   const ingredients: { ingredient: string; measure: string }[] = [];
   for (let i = 1; i <= 20; i++) {
-    const ingredientKey = `strIngredient${i}` as keyof Recipe;
-    const measureKey = `strMeasure${i}` as keyof Recipe;
-    
-    const ingredient = recipe[ingredientKey] as string;
-    const measure = recipe[measureKey] as string;
-    
-    if (ingredient && ingredient.trim()) {
-      ingredients.push({
-        ingredient: ingredient.trim(),
-        measure: measure?.trim() || ''
-      });
+    const ing = recipe[`strIngredient${i}` as keyof Recipe] as string;
+    const measure = recipe[`strMeasure${i}` as keyof Recipe] as string;
+    if (ing && ing.trim()) {
+      ingredients.push({ ingredient: ing.trim(), measure: measure?.trim() || '' });
     }
   }
+
+  // ฟังก์ชันช่วย render รูป
+  const renderImage = (src: string, alt: string) => {
+    if (src.startsWith('http')) {
+      return (
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-auto object-cover rounded-lg"
+        />
+      );
+    } else {
+      return (
+        <Image
+          src={src}
+          alt={alt}
+          width={600}
+          height={400}
+          className="w-full h-auto object-cover rounded-lg"
+          priority
+        />
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-8">
@@ -65,9 +72,13 @@ export default async function RecipeDetail({
         {/* เส้นทางนำทาง */}
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-gray-600">
-            <li><a href="/" className="hover:text-orange-500 transition-colors">หน้าหลัก</a></li>
+            <li>
+              <Link href="/" className="hover:text-orange-500 transition-colors">หน้าหลัก</Link>
+            </li>
             <li className="text-gray-400">/</li>
-            <li><a href="/recipes" className="hover:text-orange-500 transition-colors">สูตรอาหาร</a></li>
+            <li>
+              <Link href="/recipes" className="hover:text-orange-500 transition-colors">สูตรอาหาร</Link>
+            </li>
             <li className="text-gray-400">/</li>
             <li className="text-orange-600 font-medium truncate">{recipe.strMeal}</li>
           </ol>
@@ -78,20 +89,13 @@ export default async function RecipeDetail({
             {/* รูปภาพ */}
             <div className="flex flex-col">
               <div className="relative rounded-xl overflow-hidden shadow-md">
-                <Image
-                  src={recipe.strMealThumb}
-                  alt={recipe.strMeal}
-                  width={600}
-                  height={400}
-                  className="w-full h-auto object-cover rounded-lg"
-                  priority
-                />
+                {renderImage(recipe.strMealThumb, recipe.strMeal)}
               </div>
-              
+
               {/* ปุ่ม YouTube */}
               {recipe.strYoutube && (
                 <div className="mt-6 text-center">
-                  <a 
+                  <a
                     href={recipe.strYoutube}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -105,29 +109,27 @@ export default async function RecipeDetail({
                 </div>
               )}
             </div>
-            
+
             {/* รายละเอียด */}
             <div className="flex flex-col">
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4 leading-tight">
                 {recipe.strMeal}
               </h1>
-              
+
               <div className="flex flex-wrap gap-3 mb-6">
                 <span className="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
                     <path d="M14 6a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"/>
                   </svg>
-                  
                 </span>
                 <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 2.5a7.5 7.5 0 107.5 7.5A7.5 7.5 0 0010 2.5zM10 15a5 5 0 100-10 5 5 0 000 10z" clipRule="evenodd"/>
                   </svg>
-                  
                 </span>
               </div>
-              
+
               {/* วัตถุดิบ */}
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-orange-200">
@@ -153,7 +155,7 @@ export default async function RecipeDetail({
               </div>
             </div>
           </div>
-          
+
           {/* วิธีการทำ */}
           <div className="px-6 pb-8">
             <div className="border-t border-gray-200 pt-8">
@@ -166,21 +168,17 @@ export default async function RecipeDetail({
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <div className="prose max-w-none text-gray-700 leading-relaxed text-lg">
                   {recipe.strInstructions.split('\n').map((paragraph: string, index: number) => (
-                    paragraph.trim() && (
-                      <p key={index} className="mb-4">
-                        {paragraph}
-                      </p>
-                    )
+                    paragraph.trim() && <p key={index} className="mb-4">{paragraph}</p>
                   ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
+
         {/* ปุ่มกลับ */}
         <div className="mt-8 text-center">
-          <a 
+          <Link
             href="/recipes"
             className="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-gray-700 font-medium px-6 py-3 rounded-lg border border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
           >
@@ -188,7 +186,7 @@ export default async function RecipeDetail({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             กลับไปยังหน้าสูตรอาหารทั้งหมด
-          </a>
+          </Link>
         </div>
       </div>
     </div>

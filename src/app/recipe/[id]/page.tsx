@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import BackButton from "@/components/BackButton";
-import Link from "next/link";
-
 
 interface Recipe {
   idMeal: string;
@@ -16,10 +14,8 @@ interface Recipe {
   [key: `strMeasure${number}`]: string;
 }
 
-
 // ฟังก์ชันดึงรายละเอียดสูตรอาหาร
 async function getRecipe(id: string): Promise<Recipe | null> {
-
   try {
     const res = await fetch(
       `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`,
@@ -41,21 +37,16 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
   // แปลงวัตถุดิบและหน่วยวัดเป็นอาร์เรย์
   const ingredients: { ingredient: string; measure: string }[] = [];
   for (let i = 1; i <= 20; i++) {
-    const ingredientKey = `strIngredient${i}` as keyof Recipe;
-    const measureKey = `strMeasure${i}` as keyof Recipe;
-    const ingredient = recipe[ingredientKey] as string;
-    const measure = recipe[measureKey] as string;
-    if (ingredient && ingredient.trim()) {
-      ingredients.push({ ingredient: ingredient.trim(), measure: measure?.trim() || "" });
+    const ing = recipe[`strIngredient${i}` as keyof Recipe] as string;
+    const measure = recipe[`strMeasure${i}` as keyof Recipe] as string;
+    if (ing && ing.trim()) {
+      ingredients.push({ ingredient: ing.trim(), measure: measure?.trim() || "" });
     }
   }
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
-       
-
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="grid lg:grid-cols-2 gap-8 p-6">
             {/* รูปภาพ */}
@@ -129,9 +120,7 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <div className="prose max-w-none text-gray-700 leading-relaxed text-lg">
                   {recipe.strInstructions.split("\n").map((paragraph, index) => (
-                    paragraph.trim() && (
-                      <p key={index} className="mb-4">{paragraph}</p>
-                    )
+                    paragraph.trim() && <p key={index} className="mb-4">{paragraph}</p>
                   ))}
                 </div>
               </div>
