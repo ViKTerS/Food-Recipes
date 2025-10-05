@@ -7,9 +7,9 @@ interface Recipe {
   strMeal: string;
   strCategory: string;
   strArea: string;
-  strInstructions: string;
-  strMealThumb: string;
-  strYoutube: string;
+  strInstructions: string | null;
+  strMealThumb: string | null;
+  strYoutube: string | null;
   [key: `strIngredient${number}`]: string | null;
   [key: `strMeasure${number}`]: string | null;
 }
@@ -31,8 +31,9 @@ async function getRecipeDetail(id: string): Promise<Recipe | null> {
 
 export default async function RecipeDetail({ params }: { params: { id: string } }) {
   const recipe = await getRecipeDetail(params.id);
-  if (!recipe) return notFound(); // ป้องกัน undefined
+  if (!recipe) return notFound();
 
+  // ดึงวัตถุดิบ
   const ingredients: { ingredient: string; measure: string }[] = [];
   for (let i = 1; i <= 20; i++) {
     const ing = recipe[`strIngredient${i}` as keyof Recipe];
@@ -45,7 +46,7 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
-        {/* เส้นทางนำทาง */}
+        {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-gray-600">
             <li>
@@ -56,7 +57,7 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
               <Link href="/recipes" className="hover:text-orange-500 transition-colors">สูตรอาหาร</Link>
             </li>
             <li className="text-gray-400">/</li>
-            <li className="text-orange-600 font-medium truncate">{recipe.strMeal}</li>
+            <li className="text-orange-600 font-medium truncate">{recipe.strMeal || 'สูตรอาหาร'}</li>
           </ol>
         </nav>
 
@@ -66,7 +67,7 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
             <div className="flex flex-col">
               <div className="relative rounded-xl overflow-hidden shadow-md">
                 <Image
-                  src={recipe.strMealThumb || "/placeholder.png"} // ป้องกัน undefined
+                  src={recipe.strMealThumb || "/placeholder.png"}
                   alt={recipe.strMeal || "Meal Image"}
                   width={500}
                   height={300}
@@ -96,7 +97,7 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
             {/* รายละเอียด */}
             <div className="flex flex-col">
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4 leading-tight">
-                {recipe.strMeal}
+                {recipe.strMeal || 'ชื่ออาหาร'}
               </h1>
 
               {/* วัตถุดิบ */}
@@ -133,7 +134,7 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
               </h2>
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <div className="prose max-w-none text-gray-700 leading-relaxed text-lg">
-                  {recipe.strInstructions.split('\n').map((paragraph, index) => (
+                  {(recipe.strInstructions || "").split('\n').map((paragraph, index) => (
                     paragraph.trim() && <p key={index} className="mb-4">{paragraph}</p>
                   ))}
                 </div>
