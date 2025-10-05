@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RecipeCard from "../../components/RecipeCard";
+import { useMenu } from "@/StoreMeal/menu"
 
 type Meal = {
   idMeal: string;
@@ -14,6 +15,23 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [recipes, setRecipes] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const { customMenus } = useMenu(); // ดึงเมนูใหม่จาก Admin
+  // combinedRecipes สำหรับ render
+  const combinedRecipes =
+    search.trim() === ""
+      ? [...customMenus.filter(menu => menu.strCategory === "Seafood"), ...recipes]
+      : [
+        // กรอง Admin menus ตามชื่อเมนู
+        ...customMenus.filter(menu =>
+          menu.strMeal.toLowerCase().includes(search.trim().toLowerCase())
+        ),
+        // กรอง API recipes ตามชื่อเมนู
+        ...recipes.filter(meal =>
+          meal.strMeal.toLowerCase().includes(search.trim().toLowerCase())
+        ),
+      ];
+
 
 
   // โหลดเมนู default ทันทีเมื่อเปิดเว็บ
@@ -58,7 +76,7 @@ export default function HomePage() {
 
     fetchRecipes();
   }, [search]);
-  
+
 
 
   return (
@@ -66,13 +84,13 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-400 to-green-600 text-white py-16 px-6 text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-          🍲 Recipe Website
+          🍲 Food Recipes
         </h1>
         <p className="text-lg md:text-xl mb-6">
           รวมสูตรอาหารอร่อย ๆ จากทั่วโลก ค้นหาเมนูที่คุณชอบได้เลย
         </p>
         <input
-          type ="text"
+          type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="🔍 ค้นหาสูตรอาหาร..."
@@ -88,16 +106,16 @@ export default function HomePage() {
 
         {loading ? (
           <p className="text-center text-gray-600">⏳ กำลังโหลด...</p>
-        ) : recipes.length > 0 ? (
+        ) : combinedRecipes.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {recipes.map((meal) => (
+            {combinedRecipes.map((meal) => (
               <RecipeCard
                 key={meal.idMeal}
                 recipe={{
                   idMeal: meal.idMeal,
                   title: meal.strMeal,
                   image: meal.strMealThumb,
-                  category: meal.strCategory || "" ,
+                  category: meal.strCategory || "",
                 }}
               />
             ))}

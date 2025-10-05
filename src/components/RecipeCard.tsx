@@ -23,7 +23,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
         <div className="mt-4">
           <Link
-            href={`/recipe/${recipe.idMeal}`}
+            href={recipe.idMeal.startsWith("admin-")
+              ?`/admin/${recipe.idMeal}`
+              :`/recipe/${recipe.idMeal}`}
             className="inline-block w-full text-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
           >
             ดูรายละเอียด

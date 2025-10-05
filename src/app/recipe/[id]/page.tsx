@@ -3,6 +3,7 @@ import Image from "next/image";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
 
+
 interface Recipe {
   idMeal: string;
   strMeal: string;
@@ -18,6 +19,7 @@ interface Recipe {
 
 // ฟังก์ชันดึงรายละเอียดสูตรอาหาร
 async function getRecipe(id: string): Promise<Recipe | null> {
+
   try {
     const res = await fetch(
       `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`,

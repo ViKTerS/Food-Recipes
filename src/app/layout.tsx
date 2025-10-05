@@ -1,8 +1,9 @@
 "use client";
 
 import "./globals.css";
-import Navbar from "@/Navbar/page";
+import Navbar from "@/components/Navbar";
 import { usePathname } from "next/navigation";
+import { MenuProvider } from "@/StoreMeal/menu";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -11,8 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="th">
       <body>
+      <MenuProvider>
         {!hideNavbar && <Navbar />}
         {children}
+      </MenuProvider>
       </body>
     </html>
   );
