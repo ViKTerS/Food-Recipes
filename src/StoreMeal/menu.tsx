@@ -2,11 +2,13 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { Recipe } from "@/type/recipe";
 
 // สร้าง Context สำหรับเมนูที่ผู้ใช้เพิ่มเอง
-const MenuContext = createContext({
-  customMenus: [] as Recipe[],
-  addCustomMenu: (menu: Recipe) => {},
-  RemoveCustomMenu: (idMeal: string) => {},
-});
+interface MenuContextType {
+  customMenus: Recipe[];
+  addCustomMenu: (menu: Recipe) => void;
+  RemoveCustomMenu: (idMeal: string) => void;
+}
+
+const MenuContext = createContext<MenuContextType | undefined>(undefined);
 
 export const MenuProvider = ({ children }: { children: ReactNode }) => {
   const [customMenus, setCustomMenus] = useState<Recipe[]>(() => {
@@ -17,7 +19,6 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
     return [];
   });
 
-  // ลบเมนู
   const RemoveCustomMenu = (idMeal: string) => {
     setCustomMenus((prev) => {
       const newMenus = prev.filter((menu) => menu.idMeal !== idMeal);
@@ -28,7 +29,6 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  // เพิ่มเมนูใหม่
   const addCustomMenu = (menu: Recipe) => {
     setCustomMenus((prev) => {
       const newMenus = [...prev, menu];
@@ -40,13 +40,15 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MenuContext.Provider
-      value={{ customMenus, addCustomMenu, RemoveCustomMenu }}
-    >
+    <MenuContext.Provider value={{ customMenus, addCustomMenu, RemoveCustomMenu }}>
       {children}
     </MenuContext.Provider>
   );
 };
 
 // Hook สำหรับใช้ Context
-export const useMenu = () => useContext(MenuContext)!;
+export const useMenu = () => {
+  const context = useContext(MenuContext);
+  if (!context) throw new Error("useMenu must be used within MenuProvider");
+  return context;
+};

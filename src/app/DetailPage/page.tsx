@@ -46,10 +46,12 @@ export default async function RecipeDetail({ params }: { params: { id: string } 
   const renderImage = (src: string, alt: string) => {
     if (src.startsWith('http')) {
       return (
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-auto object-cover rounded-lg"
+        <Image
+          src={recipe?.strMealThumb || "/placeholder.png"} // ถ้าไม่มีรูป
+          alt={recipe?.strMeal || "Meal Image"}
+          width={500}      // กำหนดขนาดตาม layout
+          height={300}
+          className="rounded-lg"
         />
       );
     } else {

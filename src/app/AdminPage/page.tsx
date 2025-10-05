@@ -77,10 +77,12 @@ export default function AdminPage() {
     if (!src) return null;
     if (src.startsWith("http")) {
       return (
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-48 object-cover rounded-lg shadow-md"
+        <Image
+          src={form.image || "/placeholder.png"} 
+          alt="meal"
+          width={400}      
+          height={300}     
+          className="rounded-lg"
         />
       );
     } else {
